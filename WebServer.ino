@@ -57,6 +57,10 @@ String readDHTHumidity() {
   }
 }
 
+String readFlowRate() {  
+  f = flowRate;
+}
+
 
 const char index_html[] PROGMEM = R"rawliteral(
 <!DOCTYPE HTML><html>
@@ -94,6 +98,14 @@ const char index_html[] PROGMEM = R"rawliteral(
     <span id="humidity">%HUMIDITY%</span>
     <sup class="units">&percnt;</sup>
   </p>
+   <p>
+    <i class="fas fa-tint" style="color:#00add6;"></i> 
+    <span class="dht-labels">Prutok</span>
+    <span id="humidity">%FLOWRATE%</span>
+    <sup class="units">&percnt;</sup>
+  </p>
+  
+  
 
 <!--ruční zapínání čerpadla-->
   <p>
@@ -133,6 +145,19 @@ setInterval(function ( ) {
   xhttp.send();
 }, 10000 ) ;
 
+setInterval(function ( ) {
+  var xhttp = new XMLHttpRequest();
+  xhttp.onreadystatechange = function() {
+    if (this.readyState == 4 && this.status == 200) {
+      document.getElementById("flowrate").innerHTML = this.responseText;
+    }
+  };
+  xhttp.open("GET", "/flowrate", true);
+  xhttp.send();
+}, 10000 ) ;
+
+
+
 </script>
 </html>)rawliteral"; 
 
@@ -144,6 +169,9 @@ String processor(const String& var){
   }
   else if(var == "HUMIDITY"){
     return readDHTHumidity();
+  }
+   else if (var == "FLOWRATE") {     
+    return readFlowRate();         
   }
   
   return String();
@@ -171,6 +199,9 @@ void WebServer_setup() {
   });
   server.on("/humidity", HTTP_GET, [](AsyncWebServerRequest *request){
     request->send_P(200, "text/plain", readDHTHumidity().c_str());
+  });
+   server.on("/flowrate", HTTP_GET, [](AsyncWebServerRequest * request) {   
+    request->send_P(200, "text/plain", readFlowRate().c_str());     
   });
 
 
